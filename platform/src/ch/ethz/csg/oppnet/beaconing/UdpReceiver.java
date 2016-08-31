@@ -17,20 +17,10 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 
 public abstract class UdpReceiver extends InterruptibleFailsafeRunnable {
     public static final String TAG = "WifiReceiver";
-
-    /**
-     * The first two bytes of a "Multicast DNS" packet. OppNet sends beacons to the multicast groups
-     * defined in the mDNS standard, so we might also receive actual mDNS packets, although our own
-     * beacon format is different (and never starts with the same header bytes).
-     */
-    private static final byte[] MDNS_HEAD = {
-            0x00, 0x00
-    };
 
     private final BeaconingManager mBM;
 
@@ -85,9 +75,7 @@ public abstract class UdpReceiver extends InterruptibleFailsafeRunnable {
             final long timeReceived = System.currentTimeMillis() / 1000;
 
             // Skip if packet is empty, from ourselves or real mDNS
-            if (packet.getLength() == 0
-                    || isOwnPacket(packet, wifiConnection)
-                    || (packet.getData()[0] == MDNS_HEAD[0] && packet.getData()[1] == MDNS_HEAD[1])) {
+            if (packet.getLength() == 0 || isOwnPacket(packet, wifiConnection)) {
                 continue;
             }
 
@@ -104,26 +92,6 @@ public abstract class UdpReceiver extends InterruptibleFailsafeRunnable {
     }
 
     // IMPLEMENTATIONS
-
-    public static class UdpMulticastReceiver extends UdpReceiver {
-        public UdpMulticastReceiver(BeaconingManager context) throws IOException {
-            super(context, SocketType.MULTICAST);
-        }
-
-        @Override
-        protected DatagramSocket createSocket() throws IOException {
-            MulticastSocket socket = new MulticastSocket(null);
-            socket.setSoTimeout(BeaconingManager.RECEIVER_SOCKET_TIMEOUT);
-            socket.setReuseAddress(true);
-            socket.bind(new InetSocketAddress(BeaconingManager.RECEIVER_PORT_MULTICAST));
-
-            for (InetAddress multicastGroup : BeaconingManager.MULTICAST_GROUPS) {
-                socket.joinGroup(multicastGroup);
-            }
-            return socket;
-        }
-    }
-
     public static class UdpUnicastReceiver extends UdpReceiver {
         public UdpUnicastReceiver(BeaconingManager context) throws IOException {
             super(context, SocketType.UNICAST);

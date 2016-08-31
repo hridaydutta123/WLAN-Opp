@@ -40,11 +40,8 @@ message Node {
     optional bytes ip6_address = 4;
     // The Bluetooth MAC address, if any
     optional bytes bt_address = 5;
-    // If this node is capable of receiving multicast packets
-    optional bool multicast_capable = 6 [default = true];
-    // The time this node has been last seen
-    optional uint64 time_lastseen = 7;
-    optional uint32 delta_lastseen = 8;
+    optional uint64 time_lastseen = 6;
+    optional uint32 delta_lastseen = 7;
 
     // The hashes of all supported protocols (each 20 bytes) by this node
     repeated bytes protocols = 20;

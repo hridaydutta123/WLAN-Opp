@@ -13,7 +13,6 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.util.Log;
@@ -60,7 +59,6 @@ public class NetworkManager {
 
     private final Context mContext;
     private final WifiLock mWifiLock;
-    private final MulticastLock mMulticastLock;
 
     protected final ConnectivityManager mConnectivityManager;
     protected final WifiManager mWifiManager;
@@ -101,8 +99,6 @@ public class NetworkManager {
         // Locks
         mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "OppNetWifiLock");
         mWifiLock.setReferenceCounted(false);
-        mMulticastLock = mWifiManager.createMulticastLock("OppNetMulticastLock");
-        mMulticastLock.setReferenceCounted(false);
 
         // Discover hidden WLAN AP state methods using reflection
         Class<? extends WifiManager> wmClass = mWifiManager.getClass();
@@ -192,14 +188,12 @@ public class NetworkManager {
         // Both locks are not reference-counted, so acquiring multiple times is safe: If it is
         // already acquired, nothing happens.
         mWifiLock.acquire();
-        mMulticastLock.acquire();
     }
 
     public void releaseLocks() {
         // Both locks are not reference-counted, so releasing multiple times is safe: The first call
         // to release() will actually release the lock, the others get ignored.
         mWifiLock.release();
-        mMulticastLock.release();
     }
 
     public void resetConnectionLocks() {
@@ -874,18 +868,5 @@ public class NetworkManager {
      */
     public static boolean isOppNetSSID(String ssid) {
         return unquoteSSID(ssid).startsWith(BASE_AP_NAME);
-    }
-
-    /**
-     * Set of Phone Models that do not receive Multicast/Broadcast packets when the screen is off.
-     */
-    private static final Set<String> sRxMulticastModels = new HashSet<String>();
-    static {
-        sRxMulticastModels.add("Nexus One");
-        sRxMulticastModels.add("HTC Desire");
-    }
-
-    public static boolean deviceSupportsMulticastWhenAsleep() {
-        return sRxMulticastModels.contains(Build.MODEL);
     }
 }

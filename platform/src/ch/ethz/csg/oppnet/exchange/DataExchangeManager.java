@@ -209,6 +209,12 @@ public class DataExchangeManager implements
                 final boolean supportedProtocol =
                         mProtocolRegistry.hasProtocolImplementations(protocol);
 
+                StringBuilder sb = new StringBuilder();
+                for (byte b : udpPacket.getData()) {
+                    sb.append(String.format("%02X ", b));
+                }
+                Log.v(TAG, "Payload: " + sb.toString());
+
                 if (isReceiver) {
                     if (!supportedProtocol) {
                         // The packet is targeted at us, but there is no client app installed

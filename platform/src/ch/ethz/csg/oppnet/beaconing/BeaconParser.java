@@ -210,7 +210,6 @@ public class BeaconParser extends InterruptibleFailsafeRunnable {
 
         final ContentValues values = new ContentValues();
         values.put(Neighbors.COLUMN_IDENTIFIER, nodeId);
-        values.put(Neighbors.COLUMN_MULTICAST_CAPABLE, node.getMulticastCapable());
 
         if (node.hasDeltaLastseen()) {
             values.put(Neighbors.COLUMN_TIME_LASTSEEN, referenceTime - node.getDeltaLastseen());

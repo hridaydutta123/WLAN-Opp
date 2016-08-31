@@ -410,7 +410,6 @@ public class SupervisorService extends Service {
          * network-related locks.
          * 
          * @see WifiManager.WifiLock
-         * @see WifiManager.MulticastLock
          */
         SLEEPING {
             @Override

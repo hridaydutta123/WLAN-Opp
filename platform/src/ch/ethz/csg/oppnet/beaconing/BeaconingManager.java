@@ -14,7 +14,6 @@ import android.util.Log;
 
 import ch.ethz.csg.oppnet.apps.ProtocolRegistry;
 import ch.ethz.csg.oppnet.beaconing.BeaconParser.PossibleBeacon;
-import ch.ethz.csg.oppnet.beaconing.UdpReceiver.UdpMulticastReceiver;
 import ch.ethz.csg.oppnet.beaconing.UdpReceiver.UdpUnicastReceiver;
 import ch.ethz.csg.oppnet.core.Policy;
 import ch.ethz.csg.oppnet.core.Policy.BeaconingInterval;
@@ -63,10 +62,6 @@ public class BeaconingManager implements NetworkChangeListener {
     public static final String EXTRA_BEACONING_ID = "beaconing_id";
 
     protected static final int RECEIVER_PORT_UNICAST = 3108;
-    protected static final int RECEIVER_PORT_MULTICAST = 5353;
-    protected static final InetAddress[] MULTICAST_GROUPS = {
-            InetAddresses.forString("224.0.0.251"), InetAddresses.forString("ff02::fb")
-    };
 
     protected static final int RECEIVER_SOCKET_TIMEOUT = 5 * 1000; // 5 seconds
     protected static final int RECEIVER_BUFFER_SIZE = 4 * 1024; // 4 KiB
@@ -76,7 +71,7 @@ public class BeaconingManager implements NetworkChangeListener {
             UUID.fromString("35b0a0a8-c92a-4c63-b7d8-d0a55ca18159");
 
     protected static enum SocketType {
-        UNICAST, MULTICAST, RFCOMM;
+        UNICAST, RFCOMM;
     };
 
     private static final String TAG = BeaconingManager.class.getSimpleName();
@@ -96,7 +91,6 @@ public class BeaconingManager implements NetworkChangeListener {
     protected InterruptibleFailsafeRunnable mBeaconingInterval;
 
     protected UdpReceiver mUnicastReceiver;
-    protected UdpReceiver mMulticastReceiver;
     protected WeakReference<UdpSender> mOneTimeWifiSender;
     protected ScheduledFuture<?> mRegularWifiSender;
     protected RfcommReceiver mBluetoothReceiver;
@@ -137,7 +131,6 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     // BEACONING STATE
-
     private synchronized void doStateTransition(final BeaconingState newState) {
         if (newState.equals(mState)) {
             // The beaconing manager is already in the target state.
@@ -232,13 +225,6 @@ public class BeaconingManager implements NetworkChangeListener {
                 mThreadPool.execute(mUnicastReceiver);
             }
 
-            if (mNetManager.getWifiState().equals(WifiState.STA_ON_PUBLIC_AP)) {
-                // Multicast is only supported on public networks
-                if (mMulticastReceiver == null) {
-                    mMulticastReceiver = new UdpMulticastReceiver(this);
-                    mThreadPool.execute(mMulticastReceiver);
-                }
-            }
         } catch (IOException e) {
             Log.e(TAG, "Error while creating WiFi receivers:", e);
         }
@@ -248,10 +234,6 @@ public class BeaconingManager implements NetworkChangeListener {
         if (mUnicastReceiver != null) {
             mUnicastReceiver.interrupt();
             mUnicastReceiver = null;
-        }
-        if (mMulticastReceiver != null) {
-            mMulticastReceiver.interrupt();
-            mMulticastReceiver = null;
         }
     }
 

@@ -528,9 +528,6 @@ public class DbController {
             }
 
             final long timeLastSeen = values.getAsLong(Neighbors.COLUMN_TIME_LASTSEEN);
-            final boolean multicastCapable = values
-                    .getAsBoolean(Neighbors.COLUMN_MULTICAST_CAPABLE);
-            final int multicastCapableAsInt = (multicastCapable ? 1 : 0);
             final String networkName = values.getAsString(Neighbors.COLUMN_NETWORK);
 
             final byte[] ip4Address = values.getAsByteArray(Neighbors.COLUMN_IP4);
@@ -544,18 +541,18 @@ public class DbController {
             if (neighborRowId <= 0) {
                 // Neighbor has never been seen before -> INSERT
                 neighborRowId = insertRawNeighbor(
-                        neighborId, timeLastSeen, multicastCapableAsInt,
+                        neighborId, timeLastSeen,
                         networkName, ip4Address, ip6Address, btAddress);
                 success = (neighborRowId > 0);
             } else {
                 // Neighbor already registered -> UPDATE
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     success = updateRawNeighbor_postSDK11(
-                            neighborRowId, timeLastSeen, multicastCapableAsInt,
+                            neighborRowId, timeLastSeen,
                             networkName, ip4Address, ip6Address, btAddress);
                 } else {
                     success = updateRawNeighbor_preSDK11(
-                            neighborRowId, timeLastSeen, multicastCapableAsInt,
+                            neighborRowId, timeLastSeen,
                             networkName, ip4Address, ip6Address, btAddress);
                 }
             }
@@ -570,7 +567,7 @@ public class DbController {
     }
 
     private long insertRawNeighbor(
-            byte[] neighborId, long timeLastSeen, int multicastCapable,
+            byte[] neighborId, long timeLastSeen,
             String networkName, byte[] ip4Address, byte[] ip6Address, byte[] btAddress) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -578,7 +575,6 @@ public class DbController {
                 "insert into " + Neighbors.TABLE_NAME + " ("
                         + Neighbors.COLUMN_IDENTIFIER + ", "
                         + Neighbors.COLUMN_TIME_LASTSEEN + ", "
-                        + Neighbors.COLUMN_MULTICAST_CAPABLE + ", "
                         + Neighbors.COLUMN_NETWORK + ", "
                         + Neighbors.COLUMN_IP4 + ", "
                         + Neighbors.COLUMN_IP6 + ", "
@@ -587,7 +583,6 @@ public class DbController {
 
         insertStmt.bindBlob(1, neighborId);
         insertStmt.bindLong(2, timeLastSeen);
-        insertStmt.bindLong(3, multicastCapable);
 
         if (networkName == null) {
             insertStmt.bindNull(4);
@@ -618,14 +613,13 @@ public class DbController {
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private boolean updateRawNeighbor_postSDK11(
-            long neighborRowId, long timeLastSeen, int multicastCapable,
+            long neighborRowId, long timeLastSeen,
             String networkName, byte[] ip4Address, byte[] ip6Address, byte[] btAddress) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         final SQLiteStatement updateStmt = db.compileStatement(
                 "update " + Neighbors.TABLE_NAME + " set "
                         + Neighbors.COLUMN_TIME_LASTSEEN + " = ?,"
-                        + Neighbors.COLUMN_MULTICAST_CAPABLE + " = ?,"
                         + Neighbors.COLUMN_NETWORK + " = ?,"
                         + Neighbors.COLUMN_IP4 + " = ?,"
                         + Neighbors.COLUMN_IP6 + " = ?,"
@@ -635,7 +629,6 @@ public class DbController {
 
         // Bind updated values
         updateStmt.bindLong(1, timeLastSeen);
-        updateStmt.bindLong(2, multicastCapable);
 
         if (networkName == null) {
             updateStmt.bindNull(3);
@@ -669,7 +662,7 @@ public class DbController {
     }
 
     private boolean updateRawNeighbor_preSDK11(
-            long neighborRowId, long timeLastSeen, int multicastCapable,
+            long neighborRowId, long timeLastSeen,
             String networkName, byte[] ip4Address, byte[] ip6Address, byte[] btAddress) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -678,8 +671,6 @@ public class DbController {
                 new StringBuilder("update " + Neighbors.TABLE_NAME + " set ")
                         .append(Neighbors.COLUMN_TIME_LASTSEEN + " = ")
                         .append(timeLastSeen)
-                        .append(", " + Neighbors.COLUMN_MULTICAST_CAPABLE + " = ")
-                        .append(multicastCapable)
                         .append(", " + Neighbors.COLUMN_NETWORK + " = ")
                         .append(networkOrNull);
 

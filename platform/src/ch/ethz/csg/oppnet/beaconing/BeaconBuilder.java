@@ -112,10 +112,6 @@ public class BeaconBuilder {
             senderBuilder.setBtAddress(bluetoothAddress.get());
         }
 
-        if (!NetworkManager.deviceSupportsMulticastWhenAsleep()) {
-            senderBuilder.setMulticastCapable(false);
-        }
-
         if (apLikelihood != null) {
             // If connected to an OppNet AP, send along how "eager" this node is to take over
             // the AP role from the current AP (highest value wins)
@@ -142,10 +138,6 @@ public class BeaconBuilder {
                     mBeaconBuilder.addNeighborsBuilder()
                             .setNodeId(ByteString.copyFrom(neighbor.getNodeId()))
                             .setDeltaLastseen((int) (timeCreated - neighbor.getTimeLastSeen()));
-
-            if (!neighbor.isMulticastCapable()) {
-                neighborBuilder.setMulticastCapable(false);
-            }
 
             if (neighbor.hasAnyIpAddress()) {
                 if (neighbor.hasLastSeenNetwork()

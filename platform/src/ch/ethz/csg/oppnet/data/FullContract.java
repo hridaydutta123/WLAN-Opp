@@ -433,13 +433,6 @@ public final class FullContract {
         public static final String COLUMN_TIME_LASTSEEN = "time_lastseen";
 
         /**
-         * If the neighbor is capable of receiving multicast beacons.
-         * <p>
-         * Type: BOOLEAN (as INTEGER)
-         */
-        public static final String COLUMN_MULTICAST_CAPABLE = "is_multicast_capable";
-
-        /**
          * The network name where this neighbor has been seen the last time.
          * <p>
          * Type: TEXT
@@ -475,7 +468,6 @@ public final class FullContract {
                         + _ID + " integer primary key, "
                         + COLUMN_IDENTIFIER + " blob unique not null, "
                         + COLUMN_TIME_LASTSEEN + " integer not null " + DEFAULT_NOW + ", "
-                        + COLUMN_MULTICAST_CAPABLE + " integer not null default 1, "
                         + COLUMN_NETWORK + " text, "
                         + COLUMN_IP4 + " blob, "
                         + COLUMN_IP6 + " blob, "
@@ -502,7 +494,7 @@ public final class FullContract {
          */
         public static final String[] PROJECTION_DEFAULT =
         {
-                _ID, COLUMN_IDENTIFIER, COLUMN_TIME_LASTSEEN, COLUMN_MULTICAST_CAPABLE,
+                _ID, COLUMN_IDENTIFIER, COLUMN_TIME_LASTSEEN,
                 COLUMN_NETWORK, COLUMN_IP4, COLUMN_IP6, COLUMN_BLUETOOTH
         };
 
@@ -583,7 +575,6 @@ public final class FullContract {
         private static final String COMMON_JOIN_COLUMNS =
                 "RP." + COLUMN_PROTOCOL_HASH + ", "
                         + "N." + Neighbors.COLUMN_IDENTIFIER + ", "
-                        + "N." + Neighbors.COLUMN_MULTICAST_CAPABLE + ", "
                         + "N." + Neighbors.COLUMN_IP4 + ", "
                         + "N." + Neighbors.COLUMN_IP6 + ", "
                         + "N." + Neighbors.COLUMN_BLUETOOTH + ", "

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
 
     private final InetAddress mReplyTo;
     private final OppNetProtos.Beacon mReceivedBeacon;
-
-    private MulticastSocket mSocket;
 
     public UdpSender(BeaconingManager context, InetAddress replyTo,
             OppNetProtos.Beacon receivedBeacon, int apLikelihood) {
@@ -80,6 +77,8 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
         } else {
             switch (wifiState) {
                 case OPPNET_AP: {
+                    //TODO: Create a registry of IP addresses that will be sent out
+                    // to any connecting station
                     // Send beacon to all neighbors (using unicast)
                     addNeighborsAsUnicastTargets(receivers, neighbors);
                     break;
@@ -92,12 +91,8 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
                     break;
                 }
                 case STA_ON_PUBLIC_AP: {
-                    // Send beacon to all neighbors (using unicast) and all multicast groups
+                    // Send beacon to all neighbors (using unicast)
                     addNeighborsAsUnicastTargets(receivers, neighbors);
-                    addMulticastTargets(receivers);
-                    if (mPerformSubnetSweep) {
-                        addUnicastSweepTargets(receivers);
-                    }
                     break;
                 }
                 default: {
@@ -127,12 +122,7 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
         }
 
         // Create socket and send data
-        try {
-            mSocket = createSocket(connection.getWifiInterface());
-        } catch (IOException e) {
-            Log.e(TAG, "Could not create socket to send beacon:", e);
-            return;
-        }
+        Log.v(TAG, "Removed a multicast send in UDPSender");
 
         final DatagramPacket packet = new DatagramPacket(beaconData, beaconData.length);
         for (InetSocketAddress receiver : receivers) {
@@ -141,29 +131,12 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
             }
 
             packet.setSocketAddress(receiver);
-            try {
-                for (int i = 0; i < mBurstSize; i++) {
-                    mSocket.send(packet);
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "Could not create socket to send beacon to " + receiver);
-            }
+            Log.v(TAG, "Removed a multicast msocket.send");
         }
 
-        mSocket.close();
         Log.v(TAG, String.format(
                 "Sent %d beacons (size: %d bytes) to %d receivers",
                 mBurstSize, beaconData.length, receivers.size()));
-    }
-
-    private MulticastSocket createSocket(NetworkInterface wifiInterface) throws IOException {
-        final MulticastSocket socket = new MulticastSocket(null);
-        socket.setSoTimeout(5000);
-        socket.setReuseAddress(true);
-        socket.setLoopbackMode(true);
-        socket.setBroadcast(true);
-        socket.setNetworkInterface(wifiInterface);
-        return socket;
     }
 
     private void addNeighborsAsUnicastTargets(
@@ -183,10 +156,4 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
         }
     }
 
-    private void addMulticastTargets(List<InetSocketAddress> receivers) {
-        for (InetAddress multicastGroup : BeaconingManager.MULTICAST_GROUPS) {
-            receivers.add(new InetSocketAddress(
-                    multicastGroup, BeaconingManager.RECEIVER_PORT_MULTICAST));
-        }
-    }
 }
