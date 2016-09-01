@@ -48,6 +48,7 @@ public abstract class UdpReceiver extends InterruptibleFailsafeRunnable {
 
     @Override
     protected void execute() {
+        Log.v(TAG, "UDPReceiver.execute: Received beacon");
         // Start receiving beacons
         byte[] buffer = new byte[BeaconingManager.RECEIVER_BUFFER_SIZE];
         final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

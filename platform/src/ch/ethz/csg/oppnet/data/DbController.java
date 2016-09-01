@@ -579,33 +579,33 @@ public class DbController {
                         + Neighbors.COLUMN_IP4 + ", "
                         + Neighbors.COLUMN_IP6 + ", "
                         + Neighbors.COLUMN_BLUETOOTH
-                        + ") values (?, ?, ?, ?, ?, ?, ?)");
+                        + ") values (?, ?, ?, ?, ?, ?)");
 
         insertStmt.bindBlob(1, neighborId);
         insertStmt.bindLong(2, timeLastSeen);
 
         if (networkName == null) {
-            insertStmt.bindNull(4);
+            insertStmt.bindNull(3);
         } else {
-            insertStmt.bindString(4, networkName);
+            insertStmt.bindString(3, networkName);
         }
 
         if (ip4Address == null) {
-            insertStmt.bindNull(5);
+            insertStmt.bindNull(4);
         } else {
-            insertStmt.bindBlob(5, ip4Address);
+            insertStmt.bindBlob(4, ip4Address);
         }
 
         if (ip6Address == null) {
-            insertStmt.bindNull(6);
+            insertStmt.bindNull(5);
         } else {
-            insertStmt.bindBlob(6, ip6Address);
+            insertStmt.bindBlob(5, ip6Address);
         }
 
         if (btAddress == null) {
-            insertStmt.bindNull(7);
+            insertStmt.bindNull(6);
         } else {
-            insertStmt.bindBlob(7, btAddress);
+            insertStmt.bindBlob(6, btAddress);
         }
 
         return insertStmt.executeInsert();
@@ -631,32 +631,32 @@ public class DbController {
         updateStmt.bindLong(1, timeLastSeen);
 
         if (networkName == null) {
-            updateStmt.bindNull(3);
+            updateStmt.bindNull(2);
         } else {
-            updateStmt.bindString(3, networkName);
+            updateStmt.bindString(2, networkName);
         }
 
         if (ip4Address == null) {
-            updateStmt.bindNull(4);
+            updateStmt.bindNull(3);
         } else {
-            updateStmt.bindBlob(4, ip4Address);
+            updateStmt.bindBlob(3, ip4Address);
         }
 
         if (ip6Address == null) {
-            updateStmt.bindNull(5);
+            updateStmt.bindNull(4);
         } else {
-            updateStmt.bindBlob(5, ip6Address);
+            updateStmt.bindBlob(4, ip6Address);
         }
 
         if (btAddress == null) {
-            updateStmt.bindNull(6);
+            updateStmt.bindNull(5);
         } else {
-            updateStmt.bindBlob(6, btAddress);
+            updateStmt.bindBlob(5, btAddress);
         }
 
         // Bind values for WHERE clause
-        updateStmt.bindLong(7, neighborRowId);
-        updateStmt.bindLong(8, timeLastSeen);
+        updateStmt.bindLong(6, neighborRowId);
+        updateStmt.bindLong(7, timeLastSeen);
 
         return (updateStmt.executeUpdateDelete() > 0);
     }

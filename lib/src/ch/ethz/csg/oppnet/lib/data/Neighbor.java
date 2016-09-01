@@ -34,7 +34,6 @@ public class Neighbor implements Comparable<Neighbor> {
     private final long mRawId;
     private final byte[] mNodeId;
     private final long mTimeLastSeen;
-    private final boolean mMulticastCapable;
     private final String mLastSeenNetwork;
     private final Inet4Address mIp4;
     private final Inet6Address mIp6;
@@ -50,8 +49,6 @@ public class Neighbor implements Comparable<Neighbor> {
                 dataCursor.getColumnIndexOrThrow(Neighbors.COLUMN_IDENTIFIER));
         final long timeLastSeen = dataCursor.getLong(
                 dataCursor.getColumnIndexOrThrow(Neighbors.COLUMN_TIME_LASTSEEN));
-        final int multicastCapable = dataCursor.getInt(
-                dataCursor.getColumnIndexOrThrow(Neighbors.COLUMN_MULTICAST_CAPABLE));
 
         // Now all NULLable fields
         Inet4Address ip4Address = null;
@@ -104,17 +101,16 @@ public class Neighbor implements Comparable<Neighbor> {
         dataCursor.moveToPrevious();
 
         return new Neighbor(
-                rawId, nodeId, timeLastSeen, multicastCapable > 0, networkName,
+                rawId, nodeId, timeLastSeen, networkName,
                 ip4Address, ip6Address, btAddress, supportedProtocols);
     }
 
-    private Neighbor(long rawId, byte[] neighborId, long timeLastSeen, boolean multicastCapable,
-            String lastSeenNetwork, Inet4Address ip4, Inet6Address ip6, byte[] bt,
-            HashSet<ByteBuffer> protocols) {
+    private Neighbor(long rawId, byte[] neighborId, long timeLastSeen,
+                     String lastSeenNetwork, Inet4Address ip4, Inet6Address ip6, byte[] bt,
+                     HashSet<ByteBuffer> protocols) {
         mRawId = rawId;
         mNodeId = neighborId;
         mTimeLastSeen = timeLastSeen;
-        mMulticastCapable = multicastCapable;
         mLastSeenNetwork = lastSeenNetwork;
         mIp4 = ip4;
         mIp6 = ip6;
@@ -144,10 +140,6 @@ public class Neighbor implements Comparable<Neighbor> {
 
     public long getTimeLastSeen() {
         return mTimeLastSeen;
-    }
-
-    public boolean isMulticastCapable() {
-        return mMulticastCapable;
     }
 
     public boolean hasLastSeenNetwork() {

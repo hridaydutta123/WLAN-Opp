@@ -347,13 +347,6 @@ public final class OppNetContract {
         public static final String COLUMN_TIME_LASTSEEN = "time_lastseen";
 
         /**
-         * If the neighbor is capable of receiving multicast beacons.
-         * <p>
-         * Type: BOOLEAN (as INTEGER)
-         */
-        public static final String COLUMN_MULTICAST_CAPABLE = "is_multicast_capable";
-
-        /**
          * The network name where this neighbor has been seen the last time.
          * <p>
          * Type: TEXT
@@ -386,7 +379,7 @@ public final class OppNetContract {
          */
         public static final String[] PROJECTION_DEFAULT =
         {
-                _ID, COLUMN_IDENTIFIER, COLUMN_TIME_LASTSEEN, COLUMN_MULTICAST_CAPABLE,
+                _ID, COLUMN_IDENTIFIER, COLUMN_TIME_LASTSEEN,
                 COLUMN_NETWORK, COLUMN_IP4, COLUMN_IP6, COLUMN_BLUETOOTH
         };
 

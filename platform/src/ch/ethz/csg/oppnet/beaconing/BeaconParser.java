@@ -41,6 +41,7 @@ public class BeaconParser extends InterruptibleFailsafeRunnable {
     public synchronized void addProcessableBeacon(PossibleBeacon newBeacon) {
         final ByteBuffer wrappedBeaconData = ByteBuffer.wrap(newBeacon.getRawData());
 
+        Log.v(TAG, "Adding new beacon: " + newBeacon.getNetworkName());
         if (mKnownBeacons.add(wrappedBeaconData)) {
             // It's a new beacon
             mBeaconsToProcess.add(newBeacon);
@@ -67,6 +68,7 @@ public class BeaconParser extends InterruptibleFailsafeRunnable {
     }
 
     private void parseSingleBeacon(PossibleBeacon possibleBeacon) {
+        Log.v(TAG, "Parse beacon " + possibleBeacon.getNetworkName());
         final byte[] rawData = possibleBeacon.getRawData();
         final byte[] origin = possibleBeacon.getOrigin();
         final byte[] ownNodeId = possibleBeacon.getNodeId();
@@ -96,7 +98,7 @@ public class BeaconParser extends InterruptibleFailsafeRunnable {
         final String networkName = possibleBeacon.getNetworkName();
         final long referenceTimestamp = beacon.getTimeCreated();
         mBM.onBeaconParsed(beacon, possibleBeacon, referenceTimestamp);
-
+        Log.v(TAG, " [-]  found beacon " + networkName + ", " + referenceTimestamp);
         // Register the sender as neighbor
         final OppNetProtos.Node sender = beacon.getSender();
         final ContentValues senderValues;

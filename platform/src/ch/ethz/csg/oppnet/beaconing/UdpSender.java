@@ -13,9 +13,11 @@ import com.google.common.base.Optional;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +60,7 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
 
     @Override
     public void execute() {
+        Log.v(TAG, "Udpsender.execute");
         final WifiState wifiState = mBM.mNetManager.getWifiState();
         final Optional<WifiConnection> wifiConnection = mBM.mNetManager.getCurrentConnection();
         if (wifiState.equals(WifiState.DISCONNECTED) || !wifiConnection.isPresent()) {
@@ -81,6 +84,7 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
                     // to any connecting station
                     // Send beacon to all neighbors (using unicast)
                     addNeighborsAsUnicastTargets(receivers, neighbors);
+                    Log.v(TAG, "OPPNET_AP");
                     break;
                 }
                 case STA_ON_OPPNET_AP: {
@@ -88,14 +92,21 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
                     receivers.add(new InetSocketAddress(
                             connection.getApAddress().get(),
                             BeaconingManager.RECEIVER_PORT_UNICAST));
+                    Log.v(TAG, "STA_ON_OPPNET_AP");
                     break;
                 }
                 case STA_ON_PUBLIC_AP: {
                     // Send beacon to all neighbors (using unicast)
                     addNeighborsAsUnicastTargets(receivers, neighbors);
+                    Log.v(TAG, "STA_ON_PUBLIC_AP");
+                    if (mPerformSubnetSweep) {
+                        Log.v(TAG, "Sweeping Unicast target in subnet");
+                        addUnicastSweepTargets(receivers);
+                    }
                     break;
                 }
                 default: {
+                    Log.v(TAG, "No receivers?");
                     // No receivers!
                     return;
                 }
@@ -121,17 +132,30 @@ public class UdpSender extends InterruptibleFailsafeRunnable {
                     wifiState, wifiConnection, protocols, neighbors);
         }
 
-        // Create socket and send data
-        Log.v(TAG, "Removed a multicast send in UDPSender");
+        DatagramSocket socket = null;
+        try {
+            socket = new DatagramSocket();
+        } catch (SocketException e) {
+            Log.e(TAG, "Could not create socket for beacon sending");
+            e.printStackTrace();
+        }
+
 
         final DatagramPacket packet = new DatagramPacket(beaconData, beaconData.length);
         for (InetSocketAddress receiver : receivers) {
+            Log.v(TAG, "Unicast datagram send to" + receiver);
             if (mThread.isInterrupted()) {
                 break;
             }
 
             packet.setSocketAddress(receiver);
-            Log.v(TAG, "Removed a multicast msocket.send");
+
+            try {
+                socket.send(packet);
+            } catch (IOException e) {
+                Log.e(TAG, "Could not create socket to send beacon to " + receiver);
+                e.printStackTrace();
+            }
         }
 
         Log.v(TAG, String.format(

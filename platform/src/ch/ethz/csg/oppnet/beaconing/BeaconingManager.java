@@ -50,7 +50,6 @@ public class BeaconingManager implements NetworkChangeListener {
      * first place) as an extra.
      * 
      * @see #EXTRA_BEACONING_ID
-     * @see #setActive()
      */
     public static final String ACTION_BEACONING_FINISHED =
             "ch.ethz.csg.oppnet.action.BEACONING_FINISHED";
@@ -68,7 +67,7 @@ public class BeaconingManager implements NetworkChangeListener {
 
     protected static final String SDP_NAME = "OppNetBeaconingManager";
     protected static final UUID OPP_NET_UUID =
-            UUID.fromString("35b0a0a8-c92a-4c63-b7d8-d0a55ca18159");
+            UUID.fromString("3FF5835B-D538-42CE-9EED-4FCB7C8C829A");
 
     protected static enum SocketType {
         UNICAST, RFCOMM;
@@ -219,6 +218,7 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     protected void startWifiReceiver() {
+        Log.d(TAG, "StartWifiReceiver.... ");
         try {
             if (mUnicastReceiver == null) {
                 mUnicastReceiver = new UdpUnicastReceiver(this);
@@ -231,6 +231,7 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     protected void stopWifiReceiver() {
+        Log.d(TAG, "StopWifiReceiver.... ");
         if (mUnicastReceiver != null) {
             mUnicastReceiver.interrupt();
             mUnicastReceiver = null;
@@ -276,6 +277,7 @@ public class BeaconingManager implements NetworkChangeListener {
     // BEACON SENDERS
 
     public void sendSingleBeacon() {
+        Log.d(TAG, "sendSingleBeacon.... ");
         if (mNetManager.isWifiConnected()) {
             startWifiSender(false);
         }
@@ -285,6 +287,7 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     protected void startWifiSender(boolean repeating) {
+        Log.d(TAG, "startWifiSender(repeating).... ");
         if (mRegularWifiSender != null && !mRegularWifiSender.isDone()) {
             // The senders are already running
             Log.v(TAG, "Wifi senders already running");
@@ -311,6 +314,7 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     protected void stopWifiSender() {
+        Log.d(TAG, "stopWifiSender().... ");
         if (mOneTimeWifiSender != null) {
             UdpSender oneTimeSender = mOneTimeWifiSender.get();
             if (oneTimeSender != null) {
@@ -351,6 +355,7 @@ public class BeaconingManager implements NetworkChangeListener {
     // BEACONING INTERVAL
 
     private void startBeaconingInterval() {
+        Log.d(TAG, "startBeaconingInterval().... ");
         if (mBeaconingInterval == null) {
             mBeaconParser.clearProcessedBeacons();
             mBeaconingInterval = new BeaconingIntervalHandler(this, mCurrentBeaconingRoundId);
@@ -359,6 +364,7 @@ public class BeaconingManager implements NetworkChangeListener {
     }
 
     private void stopBeaconingInterval() {
+        Log.d(TAG, "stopBeaconingInterval().... ");
         if (mBeaconingInterval != null) {
             mBeaconingInterval.interrupt();
             mBeaconingInterval = null;
@@ -370,6 +376,7 @@ public class BeaconingManager implements NetworkChangeListener {
     // CALLBACKS
 
     protected void onBeaconReceived(PossibleBeacon possibleBeacon) {
+        Log.i(TAG, "Possible beacone received: " + possibleBeacon.getNetworkName());
         mBeaconParser.addProcessableBeacon(possibleBeacon);
     }
 
@@ -484,6 +491,7 @@ public class BeaconingManager implements NetworkChangeListener {
 
     @Override
     public void onWifiNetworkChanged(boolean connected, boolean isFailover) {
+        Log.d(TAG, "onWifiNetworkChanged().... ");
         if (mState == BeaconingState.PASSIVE) {
             if (connected) {
                 startWifiReceiver();
