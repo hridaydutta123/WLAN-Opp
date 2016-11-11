@@ -104,7 +104,8 @@ public class BeaconingIntervalHandler extends InterruptibleFailsafeRunnable
         mWifiIterationCount++;
         mHandler.postDelayed(new WifiIterationTimeoutHandler(), WIFI_SWITCH_TIMEOUT);
 
-        mHandler.postDelayed(new BluetoothIterationTimeoutHandler(), BT_INITIAL_WAIT_TIMEOUT);
+        // Disarm Changed
+        //mHandler.postDelayed(new BluetoothIterationTimeoutHandler(), BT_INITIAL_WAIT_TIMEOUT);
 
         Looper.loop();
     }
@@ -257,18 +258,24 @@ public class BeaconingIntervalHandler extends InterruptibleFailsafeRunnable
         // get random open network we did not visit before
         ScanResult selectedNetwork = null;
         for (ScanResult network : scanResults.getConnectibleNetworks()) {
-            if (!mVisitedNetworks.contains(network.SSID)) {
+//            if (!mVisitedNetworks.contains(network.SSID)) {
+//                selectedNetwork = network;
+//                break;
+//            }
+
+            // Disarm Change
+            if (network.SSID.startsWith("OppNetAP")) {
                 selectedNetwork = network;
                 break;
             }
         }
-        if (selectedNetwork == null) {
-            // Visited all other networks before, so stick to the first one, but only if it's OppNet
-            final ScanResult firstNetwork = scanResults.getConnectibleNetworks().get(0);
-            if (NetworkManager.isOppNetSSID(firstNetwork.SSID)) {
-                selectedNetwork = firstNetwork;
-            }
-        }
+//        if (selectedNetwork == null) {
+//            // Visited all other networks before, so stick to the first one, but only if it's OppNet
+//            final ScanResult firstNetwork = scanResults.getConnectibleNetworks().get(0);
+//            if (NetworkManager.isOppNetSSID(firstNetwork.SSID)) {
+//                selectedNetwork = firstNetwork;
+//            }
+//        }
 
         return selectedNetwork;
     }
@@ -329,16 +336,25 @@ public class BeaconingIntervalHandler extends InterruptibleFailsafeRunnable
         if (scanResults.hasConnectibleNetworks()) {
             ScanResult selectedNetwork = choseRandomNetworkToConnect(scanResults);
             if (selectedNetwork != null) {
+                Log.v("DisarmCheck", "ATC start: Beaconing state: " + mWifiBeaconingState);
                 mWifiBeaconingState = WifiBeaconingState.CONNECTING;
                 mAttemptedNetworks.add(selectedNetwork.SSID);
-
-                if (!mNetManager.connectToWifi(selectedNetwork)) {
+                if (mNetManager.connectToWifi(selectedNetwork) == 3) {
                     Log.v(TAG, String.format("Switching to network '%s'", selectedNetwork.SSID));
 
                     // Stop senders/receivers on current network when switching to new network
                     mBeaconingManager.stopWifiReceiver();
                     mBeaconingManager.stopWifiSender();
                 }
+                // Disarm Change
+                else if(mNetManager.connectToWifi(selectedNetwork) == 1){
+                    mWifiBeaconingState = WifiBeaconingState.CONNECTED;
+                }
+                else
+                {
+                    mWifiBeaconingState = WifiBeaconingState.SCANNING;
+                }
+                Log.v("DisarmCheck", "ATC end: Beaconing state: " + mWifiBeaconingState);
                 return;
             }
         }

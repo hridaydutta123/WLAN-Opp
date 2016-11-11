@@ -61,8 +61,9 @@ public enum Policy {
      * fast as possible. It also drains the battery the fastest, and therefore it should only be
      * enabled with the user's consent.
      */
+    // Disarm Changed
     DISASTER(BeaconingInterval.FAST,
-            Feature.values());
+            Feature.WIFI_CLIENT,Feature.WIFI_AP);
 
     private final BeaconingInterval mBeaconInterval;
     private final Set<Feature> mSupportedFeatures;

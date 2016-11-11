@@ -344,21 +344,30 @@ public class NetworkManager {
     }
 
     // unchecked
-    public boolean connectToWifi(ScanResult network) {
+    //Disarm Changed from bool to int
+    public int connectToWifi(ScanResult network) {
         Log.v(TAG, "Requested to connect to network " + network.SSID + " / " + network.BSSID);
 
         // Check if network is already configured
         int networkId = -1;
         for (WifiConfiguration wifiConfiguration : getConfiguredWifiNetworks()) {
             if (network.SSID.equals(NetworkManager.unquoteSSID(wifiConfiguration.SSID))) {
+                Log.v("DisarmCheck", "SSID MATCH");
+                Log.v("DisarmCheck", "BSSID Values: " + network.BSSID + ", " + wifiConfiguration.BSSID);
                 if (wifiConfiguration.BSSID == null
-                        || wifiConfiguration.BSSID.equals(network.BSSID)) {
+                        || wifiConfiguration.BSSID.equals(network.BSSID) || wifiConfiguration.BSSID.equals("any")) {
+                    Log.v("DisarmCheck", "BSSID MATCH");
                     if (wifiConfiguration.status == WifiConfiguration.Status.CURRENT) {
+                        Log.v("DisarmCheck", "CURRENT WIFI MATCH");
                         // Already connected to the requested network
-                        return true;
+                        return 1;
                     }
-                    networkId = wifiConfiguration.networkId;
+                    else
+                    {
+                        return 2;
+                    }
                 }
+                networkId = wifiConfiguration.networkId;
             }
         }
 
@@ -385,7 +394,7 @@ public class NetworkManager {
         mWifiManager.disconnect();
         mWifiManager.enableNetwork(networkId, true);
         mWifiManager.reconnect();
-        return false;
+        return 3;
     }
 
     /**

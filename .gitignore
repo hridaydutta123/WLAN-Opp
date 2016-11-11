@@ -1,0 +1,16 @@
+.gradle/
+.idea/
+WLAN-Opp.iml
+build.gradle
+build/
+chat/build/
+chat/chat.iml
+gradle/
+gradlew
+gradlew.bat
+lib/build/
+lib/lib.iml
+local.properties
+platform/build/
+platform/platform.iml
+
