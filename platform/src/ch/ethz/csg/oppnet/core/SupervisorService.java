@@ -208,10 +208,12 @@ public class SupervisorService extends Service {
                     this, 0, new Intent(this, WakeUpReceiver.class),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            final long triggerTimeMillis = interval.getNextBeaconTimeMillis();
+            long triggerTimeMillis = interval.getNextBeaconTimeMillis();
+            triggerTimeMillis = 0;
             mAlarmManager.set(AlarmManager.RTC_WAKEUP, triggerTimeMillis, mWakeUpIntent);
             Log.d(TAG, String.format("Set alarm to wake up again in %d seconds",
-                    ((triggerTimeMillis - System.currentTimeMillis()) / 1000)));
+                    ((triggerTimeMillis  - 0) / 1000)));
+            // Disarm check triggerTimeMillis - System.currentTimeMillis() and triggerTimeMIllis to 0
         }
     }
 

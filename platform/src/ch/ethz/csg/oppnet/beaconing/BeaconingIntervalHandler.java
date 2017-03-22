@@ -38,6 +38,7 @@ public class BeaconingIntervalHandler extends InterruptibleFailsafeRunnable
 
     public static final int MAX_BEACONING_DURATION = 60 * 1000;
 
+    // DisarmCheck changed 15 to 30
     private static final int WIFI_SWITCH_TIMEOUT = 15 * 1000;
     private static final int WIFI_MAX_ITERATION_COUNT =
             MAX_BEACONING_DURATION / WIFI_SWITCH_TIMEOUT;
